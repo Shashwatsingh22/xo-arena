@@ -1,0 +1,16 @@
+{
+  "files": [
+    "./src/types.ts",
+    "./src/match_handler.ts",
+    "./src/main.ts"
+  ],
+  "compilerOptions": {
+    "target": "es5",
+    "typeRoots": ["./node_modules"],
+    "outFile": "./build/main.js",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
