@@ -18,9 +18,31 @@ export default function Game({ session, matchId, onBack }: Props) {
   const [error, setError] = useState("");
   const [waiting, setWaiting] = useState(true);
   const [players, setPlayers] = useState<Record<string, string>>({});
+  const [turnDeadline, setTurnDeadline] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const socketRef = useRef(getSocket());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isMyTurn = currentTurn === session.user_id;
+
+  // Countdown timer for timed mode
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (!turnDeadline) {
+      setTimeLeft(null);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((turnDeadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0 && timerRef.current) clearInterval(timerRef.current);
+    };
+    tick();
+    timerRef.current = setInterval(tick, 500);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [turnDeadline]);
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -49,11 +71,13 @@ export default function Game({ session, matchId, onBack }: Props) {
         const state: StateUpdate = JSON.parse(payload);
         setBoard(state.board);
         setCurrentTurn(state.currentTurn);
+        setTurnDeadline(state.turnDeadline);
         setWaiting(false);
       } else if (opCode === OpCode.GAME_OVER) {
         const result: GameOver = JSON.parse(payload);
         setBoard(result.board);
         setGameOver(result);
+        setTurnDeadline(null);
       } else if (opCode === OpCode.REJECTED) {
         const msg = JSON.parse(payload);
         setError(msg.reason);
@@ -125,6 +149,11 @@ export default function Game({ session, matchId, onBack }: Props) {
               {!gameOver && (
                 <p className="turn-info">
                   {isMyTurn ? "Your turn" : "Opponent's turn"}
+                  {timeLeft !== null && (
+                    <span className={`timer ${timeLeft <= 5 ? "urgent" : ""}`}>
+                      {" "}{timeLeft}s
+                    </span>
+                  )}
                 </p>
               )}
             </div>

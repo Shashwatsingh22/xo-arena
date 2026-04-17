@@ -126,3 +126,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .leaderboard-table th { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
 .leaderboard-table .highlight { background: rgba(233, 69, 96, 0.1); }
+
+/* Timer */
+.timer { font-variant-numeric: tabular-nums; margin-left: 0.3rem; }
+.timer.urgent { color: #ff4444; animation: pulse 0.5s infinite alternate; }
+@keyframes pulse { to { opacity: 0.5; } }
