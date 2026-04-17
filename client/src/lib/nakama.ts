@@ -36,7 +36,14 @@ export async function disconnectSocket() {
 export async function authenticateDevice(username: string): Promise<Session> {
   let deviceId = localStorage.getItem("xo_device_id");
   if (!deviceId) {
-    deviceId = crypto.randomUUID();
+    // crypto.randomUUID requires secure context (HTTPS), so fallback for HTTP
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      deviceId = crypto.randomUUID();
+    } else {
+      deviceId = "xxxx-xxxx-xxxx-xxxx".replace(/x/g, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      );
+    }
     localStorage.setItem("xo_device_id", deviceId);
   }
   const session = await client.authenticateDevice(deviceId, true, username);
