@@ -1,32 +1,28 @@
-// Dynamic win checker for any board size
-function checkWinner(board: number[], size: number, winLen: number): number {
-  // Check all lines: rows, cols, diagonals
+// Dynamic win checker — returns { mark, cells } or null
+function checkWinner(board: number[], size: number, winLen: number): { mark: number; cells: number[] } | null {
   for (var r = 0; r < size; r++) {
     for (var c = 0; c < size; c++) {
       var idx = r * size + c;
       if (board[idx] === Mark.EMPTY) continue;
       var mark = board[idx];
-
-      // Check 4 directions: right, down, down-right, down-left
       var dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
       for (var d = 0; d < dirs.length; d++) {
         var dr = dirs[d][0], dc = dirs[d][1];
         var endR = r + dr * (winLen - 1);
         var endC = c + dc * (winLen - 1);
         if (endR < 0 || endR >= size || endC < 0 || endC >= size) continue;
-
         var won = true;
+        var cells: number[] = [idx];
         for (var step = 1; step < winLen; step++) {
-          if (board[(r + dr * step) * size + (c + dc * step)] !== mark) {
-            won = false;
-            break;
-          }
+          var ci = (r + dr * step) * size + (c + dc * step);
+          if (board[ci] !== mark) { won = false; break; }
+          cells.push(ci);
         }
-        if (won) return mark;
+        if (won) return { mark: mark, cells: cells };
       }
     }
   }
-  return Mark.EMPTY;
+  return null;
 }
 
 function broadcastState(dispatcher: nkruntime.MatchDispatcher, state: MatchState) {
@@ -43,12 +39,14 @@ function broadcastState(dispatcher: nkruntime.MatchDispatcher, state: MatchState
 function broadcastGameOver(
   dispatcher: nkruntime.MatchDispatcher,
   state: MatchState,
-  reason: string
+  reason: string,
+  winLine?: number[]
 ) {
   dispatcher.broadcastMessage(OpCode.GAME_OVER, JSON.stringify({
     winner: state.winner,
     board: state.board,
     reason: reason,
+    winLine: winLine || [],
   }));
 }
 
@@ -220,14 +218,14 @@ var matchLoop: nkruntime.MatchLoopFunction = function (
     s.board[moveData.position] = s.marks[senderId];
     s.moveCount++;
 
-    var winnerMark = checkWinner(s.board, s.boardSize, s.winLength);
-    if (winnerMark !== Mark.EMPTY) {
+    var winResult = checkWinner(s.board, s.boardSize, s.winLength);
+    if (winResult !== null) {
       var uids = Object.keys(s.marks);
       for (var j = 0; j < uids.length; j++) {
-        if (s.marks[uids[j]] === winnerMark) { s.winner = uids[j]; break; }
+        if (s.marks[uids[j]] === winResult.mark) { s.winner = uids[j]; break; }
       }
       s.gameOver = true;
-      broadcastGameOver(dispatcher, s, "win");
+      broadcastGameOver(dispatcher, s, "win", winResult.cells);
       updateLeaderboard(ctx, logger, nk, s);
       return { state: s };
     }

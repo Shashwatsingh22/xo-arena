@@ -340,3 +340,22 @@ button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow
   cursor: pointer; box-shadow: none; line-height: 1;
 }
 .sound-toggle:hover { background: var(--surface-hover); transform: none; }
+
+/* Winning cells highlight */
+.cell.win {
+  animation: winGlow 0.6s ease-in-out infinite alternate;
+  border-color: var(--success) !important;
+  z-index: 2;
+}
+.cell.win.x {
+  background: rgba(233, 69, 96, 0.2);
+  box-shadow: 0 0 20px var(--primary-glow), inset 0 0 15px rgba(233, 69, 96, 0.15);
+}
+.cell.win.o {
+  background: rgba(0, 210, 255, 0.2);
+  box-shadow: 0 0 20px var(--accent-glow), inset 0 0 15px rgba(0, 210, 255, 0.15);
+}
+@keyframes winGlow {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}

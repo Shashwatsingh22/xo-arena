@@ -29,6 +29,7 @@ export default function Game({ session, matchId, onBack, soundOn }: Props) {
   const gameStartedRef = useRef(false);
 
   const isMyTurn = currentTurn === session.user_id;
+  const winLineSet = new Set(gameOver?.winLine || []);
 
   // Countdown timer for timed mode
   useEffect(() => {
@@ -193,7 +194,7 @@ export default function Game({ session, matchId, onBack, soundOn }: Props) {
                   key={i}
                   className={`cell ${cell === 1 ? "x" : cell === 2 ? "o" : ""} ${
                     isMyTurn && cell === 0 && !gameOver ? "clickable" : ""
-                  }`}
+                  } ${winLineSet.has(i) ? "win" : ""}`}
                   onClick={() => makeMove(i)}
                   disabled={!isMyTurn || cell !== 0 || !!gameOver}
                   aria-label={`Cell ${i}, ${cell === 0 ? "empty" : MARKS[cell]}`}

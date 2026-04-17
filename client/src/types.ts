@@ -17,6 +17,7 @@ export interface GameOver {
   winner: string | null;
   board: number[];
   reason: "win" | "draw" | "forfeit" | "timeout" | "disconnect";
+  winLine: number[];
 }
 
 export interface PlayerStats {
