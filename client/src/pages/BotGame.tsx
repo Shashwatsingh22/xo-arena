@@ -28,6 +28,11 @@ export default function BotGame({ boardSize, onBack, soundOn }: Props) {
   const isPlayerTurn = moveCount % 2 === 0; // Player is X (even moves)
   const winLineSet = new Set(winLine);
 
+  // Debug: log when winLine changes
+  useEffect(() => {
+    if (winLine.length > 0) console.log("Win line cells:", winLine);
+  }, [winLine]);
+
   const checkEnd = useCallback((b: number[], mc: number) => {
     const result = checkWinLocal(b, boardSize, winLen);
     if (result) {

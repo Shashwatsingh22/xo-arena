@@ -31,6 +31,10 @@ export default function Game({ session, matchId, onBack, soundOn }: Props) {
   const isMyTurn = currentTurn === session.user_id;
   const winLineSet = new Set(gameOver?.winLine || []);
 
+  useEffect(() => {
+    if (gameOver?.winLine?.length) console.log("Online win line:", gameOver.winLine);
+  }, [gameOver]);
+
   // Countdown timer for timed mode
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
