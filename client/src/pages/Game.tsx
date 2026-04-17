@@ -46,7 +46,8 @@ export default function Game({ session, matchId, onBack }: Props) {
   }, [turnDeadline]);
 
   useEffect(() => {
-    const socket = socketRef.current;
+    const socket = getSocket();
+    socketRef.current = socket;
     if (!socket) {
       setError("Socket not connected");
       return;
@@ -56,7 +57,9 @@ export default function Game({ session, matchId, onBack }: Props) {
     if (joinedRef.current) return;
     joinedRef.current = true;
 
+    console.log("Joining match:", matchId);
     socket.joinMatch(matchId).then((match) => {
+      console.log("Joined match, presences:", match.presences.length);
       const p: Record<string, string> = {};
       for (const presence of match.presences) {
         p[presence.user_id!] = presence.username!;

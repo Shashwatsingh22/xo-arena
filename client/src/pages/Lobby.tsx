@@ -17,8 +17,14 @@ export default function Lobby({ session, onMatchFound }: Props) {
     setError("");
     try {
       const res = await client.rpc(session, "find_match", { mode });
-      const data = res.payload as Record<string, string>;
-      if (data.matchId) {
+      let data: Record<string, string>;
+      if (typeof res.payload === "string") {
+        data = JSON.parse(res.payload);
+      } else {
+        data = res.payload as Record<string, string>;
+      }
+      console.log("find_match response:", data);
+      if (data && data.matchId) {
         onMatchFound(data.matchId);
       } else {
         setError("Could not find a match. Try again.");
