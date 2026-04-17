@@ -1,6 +1,6 @@
 import { Client, Session, Socket } from "@heroiclabs/nakama-js";
 
-const NAKAMA_HOST = import.meta.env.VITE_NAKAMA_HOST || window.location.hostname;
+const NAKAMA_HOST = import.meta.env.VITE_NAKAMA_HOST || "xo-arena-v9i0.onrender.com";
 const NAKAMA_PORT = import.meta.env.VITE_NAKAMA_PORT || (window.location.protocol === "https:" ? "443" : "7350");
 const NAKAMA_KEY = import.meta.env.VITE_NAKAMA_KEY || "defaultkey";
 const NAKAMA_SSL = import.meta.env.VITE_NAKAMA_SSL === "true" || window.location.protocol === "https:";
