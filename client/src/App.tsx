@@ -5,7 +5,7 @@ import Lobby from "./pages/Lobby";
 import Game from "./pages/Game";
 import BotGame from "./pages/BotGame";
 import Leaderboard from "./pages/Leaderboard";
-import { resumeAudio } from "./lib/sounds";
+import { resumeAudio, playClick } from "./lib/sounds";
 
 type Page = "login" | "lobby" | "game" | "botgame" | "leaderboard";
 
@@ -15,10 +15,17 @@ export default function App() {
   const [matchId, setMatchId] = useState("");
   const [soundOn, setSoundOn] = useState(true);
   const [botBoardSize, setBotBoardSize] = useState<3 | 5>(3);
+  const [guestName, setGuestName] = useState("");
 
   const handleLogin = (s: Session) => {
     resumeAudio();
     setSession(s);
+    setPage("lobby");
+  };
+
+  const handleGuestPlay = (name: string) => {
+    resumeAudio();
+    setGuestName(name);
     setPage("lobby");
   };
 
@@ -37,13 +44,18 @@ export default function App() {
     setPage("lobby");
   };
 
+  const isLoggedIn = session || guestName;
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1 onClick={() => session && setPage("lobby")} style={{ cursor: "pointer" }}>
+        <h1
+          onClick={() => isLoggedIn && setPage("lobby")}
+          style={{ cursor: isLoggedIn ? "pointer" : "default" }}
+        >
           ✕○ ARENA
         </h1>
-        {session && (
+        {isLoggedIn && (
           <nav>
             <button
               className={page === "lobby" ? "active" : ""}
@@ -51,15 +63,17 @@ export default function App() {
             >
               Play
             </button>
-            <button
-              className={page === "leaderboard" ? "active" : ""}
-              onClick={() => setPage("leaderboard")}
-            >
-              Rankings
-            </button>
+            {session && (
+              <button
+                className={page === "leaderboard" ? "active" : ""}
+                onClick={() => setPage("leaderboard")}
+              >
+                Rankings
+              </button>
+            )}
             <button
               className="sound-toggle"
-              onClick={() => setSoundOn(!soundOn)}
+              onClick={() => { playClick(); setSoundOn(!soundOn); }}
               aria-label={soundOn ? "Mute sounds" : "Unmute sounds"}
             >
               {soundOn ? "🔊" : "🔇"}
@@ -68,9 +82,16 @@ export default function App() {
         )}
       </header>
       <main>
-        {page === "login" && <Login onLogin={handleLogin} />}
-        {page === "lobby" && session && (
-          <Lobby session={session} onMatchFound={handleMatchFound} onPlayBot={handlePlayBot} />
+        {page === "login" && (
+          <Login onLogin={handleLogin} onGuestPlay={handleGuestPlay} />
+        )}
+        {page === "lobby" && isLoggedIn && (
+          <Lobby
+            session={session}
+            guestName={guestName}
+            onMatchFound={handleMatchFound}
+            onPlayBot={handlePlayBot}
+          />
         )}
         {page === "game" && session && matchId && (
           <Game session={session} matchId={matchId} onBack={handleBackToLobby} soundOn={soundOn} />

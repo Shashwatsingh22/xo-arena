@@ -5,14 +5,15 @@ import { playClick } from "../lib/sounds";
 
 interface Props {
   onLogin: (session: Session) => void;
+  onGuestPlay: (name: string) => void;
 }
 
-export default function Login({ onLogin }: Props) {
+export default function Login({ onLogin, onGuestPlay }: Props) {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleOnline = async (e: React.FormEvent) => {
     e.preventDefault();
     playClick();
     const name = username.trim();
@@ -28,10 +29,16 @@ export default function Login({ onLogin }: Props) {
       onLogin(session);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to connect";
-      setError(msg);
+      setError(msg + " — Try 'Play vs Bot' instead!");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuest = () => {
+    playClick();
+    const name = username.trim() || "Player";
+    onGuestPlay(name);
   };
 
   return (
@@ -42,7 +49,7 @@ export default function Login({ onLogin }: Props) {
         <p className="hint" style={{ marginBottom: "1.5rem", marginTop: 0 }}>
           Choose your warrior name
         </p>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleOnline}>
           <input
             type="text"
             placeholder="Your nickname..."
@@ -54,9 +61,22 @@ export default function Login({ onLogin }: Props) {
           />
           {error && <p className="error" role="alert">{error}</p>}
           <button type="submit" disabled={loading} style={{ width: "100%" }}>
-            {loading ? "Connecting..." : "Enter Arena →"}
+            {loading ? "Connecting..." : "⚡ Play Online"}
           </button>
         </form>
+
+        <div style={{ margin: "1rem 0", color: "var(--text-muted)", fontSize: "0.8rem" }}>or</div>
+
+        <button
+          onClick={handleGuest}
+          style={{
+            width: "100%",
+            background: "linear-gradient(135deg, #16a34a, #059669)",
+            boxShadow: "0 4px 20px rgba(22,163,74,0.3)",
+          }}
+        >
+          🤖 Play vs Bot (no server needed)
+        </button>
       </div>
     </div>
   );
