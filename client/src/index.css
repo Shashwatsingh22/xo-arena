@@ -99,3 +99,30 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   margin: 1rem auto; animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Nav */
+.app-header nav { display: flex; gap: 0.5rem; }
+.app-header nav button {
+  background: transparent; border: 1px solid var(--accent);
+  color: var(--text-dim); padding: 0.4rem 1rem;
+  border-radius: var(--radius); font-size: 0.85rem;
+}
+.app-header nav button.active,
+.app-header nav button:hover {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* Leaderboard */
+.stats-card { max-width: 420px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.stat { text-align: center; }
+.stat-value { display: block; font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.75rem; color: var(--text-dim); }
+.leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.6rem 0.5rem; text-align: left;
+  border-bottom: 1px solid var(--accent);
+}
+.leaderboard-table th { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
+.leaderboard-table .highlight { background: rgba(233, 69, 96, 0.1); }
