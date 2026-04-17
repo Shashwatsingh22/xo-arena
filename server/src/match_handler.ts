@@ -158,6 +158,13 @@ var matchJoin: nkruntime.MatchJoinFunction = function (
   for (var i = 0; i < presences.length; i++) {
     var presence = presences[i];
     var uid = presence.userId;
+
+    // Skip if player already tracked (reconnect / StrictMode re-mount)
+    if (s.players[uid]) {
+      logger.info("Player %s re-joined", presence.username);
+      continue;
+    }
+
     var playerCount = Object.keys(s.players).length;
     var mark = playerCount === 0 ? Mark.X : Mark.O;
 
@@ -170,10 +177,13 @@ var matchJoin: nkruntime.MatchJoinFunction = function (
     }
   }
 
-  if (Object.keys(s.players).length === MAX_PLAYERS) {
-    var label = JSON.stringify({ mode: s.mode, open: false, players: MAX_PLAYERS });
-    dispatcher.matchLabelUpdate(label);
+  var totalPlayers = Object.keys(s.players).length;
 
+  // Update label with current player count
+  var label = JSON.stringify({ mode: s.mode, open: totalPlayers < MAX_PLAYERS, players: totalPlayers });
+  dispatcher.matchLabelUpdate(label);
+
+  if (totalPlayers === MAX_PLAYERS) {
     if (s.mode === "timed") {
       s.turnDeadline = Date.now() + s.turnDuration * 1000;
     }
@@ -197,11 +207,18 @@ var matchLeave: nkruntime.MatchLeaveFunction = function (
   for (var i = 0; i < presences.length; i++) {
     var presence = presences[i];
     logger.info("Player %s left", presence.username);
-    delete s.players[presence.userId];
-    delete s.marks[presence.userId];
+
+    // Only remove from tracking if game is over or they truly left
+    // Don't remove during pre-game (allows React StrictMode re-mount)
+    if (s.moveCount > 0 || s.gameOver) {
+      delete s.players[presence.userId];
+      delete s.marks[presence.userId];
+    }
   }
 
   var remaining = Object.keys(s.players);
+
+  // If a player leaves mid-game, other player wins
   if (remaining.length === 1 && !s.gameOver && s.moveCount > 0) {
     s.winner = remaining[0];
     s.gameOver = true;
@@ -209,7 +226,8 @@ var matchLeave: nkruntime.MatchLeaveFunction = function (
     updateLeaderboard(ctx, logger, nk, s);
   }
 
-  if (remaining.length === 0) {
+  // Only kill match if game is over and no one is left
+  if (s.gameOver && remaining.length === 0) {
     return null;
   }
 

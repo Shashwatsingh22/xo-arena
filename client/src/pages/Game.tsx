@@ -22,6 +22,7 @@ export default function Game({ session, matchId, onBack }: Props) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const socketRef = useRef(getSocket());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const joinedRef = useRef(false);
 
   const isMyTurn = currentTurn === session.user_id;
 
@@ -50,6 +51,10 @@ export default function Game({ session, matchId, onBack }: Props) {
       setError("Socket not connected");
       return;
     }
+
+    // Prevent double-join from React StrictMode
+    if (joinedRef.current) return;
+    joinedRef.current = true;
 
     socket.joinMatch(matchId).then((match) => {
       const p: Record<string, string> = {};
@@ -100,7 +105,8 @@ export default function Game({ session, matchId, onBack }: Props) {
     };
 
     return () => {
-      socket.leaveMatch(matchId).catch(() => {});
+      // Don't leave match on cleanup — React StrictMode re-mounts
+      // Match leave is handled when navigating away via onBack
     };
   }, [matchId, session]);
 
@@ -113,6 +119,14 @@ export default function Game({ session, matchId, onBack }: Props) {
     },
     [isMyTurn, gameOver, board, matchId]
   );
+
+  const handleBack = useCallback(() => {
+    const socket = socketRef.current;
+    if (socket) {
+      socket.leaveMatch(matchId).catch(() => {});
+    }
+    onBack();
+  }, [matchId, onBack]);
 
   const getResultText = () => {
     if (!gameOver) return "";
@@ -175,7 +189,7 @@ export default function Game({ session, matchId, onBack }: Props) {
             {gameOver && (
               <div className="game-result">
                 <h2>{getResultText()}</h2>
-                <button onClick={onBack}>Play Again</button>
+                <button onClick={handleBack}>Play Again</button>
               </div>
             )}
             {error && <p className="error" role="alert">{error}</p>}

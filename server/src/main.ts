@@ -60,15 +60,22 @@ var rpcFindMatch: nkruntime.RpcFunction = function (
   var matches: nkruntime.Match[] = [];
   try {
     var query = "+label.open:true +label.mode:" + mode;
-    var result = nk.matchList(10, true, "", 0, 1, query);
+    var result = nk.matchList(10, true, "", 0, MAX_PLAYERS - 1, query);
     matches = result || [];
+    logger.info("matchList query='%s' found %d matches", query, matches.length);
   } catch (e) {
     logger.error("Match list error: %s", e);
   }
 
+  // Filter out matches where the requesting user is already in
+  // (avoid joining your own match)
   if (matches.length > 0) {
-    logger.info("Found existing match: %s", matches[0].matchId);
-    return JSON.stringify({ matchId: matches[0].matchId });
+    for (var i = 0; i < matches.length; i++) {
+      var match = matches[i];
+      logger.info("Found existing match: %s (size=%d)", match.matchId, match.size);
+      // Return the first open match
+      return JSON.stringify({ matchId: match.matchId });
+    }
   }
 
   // Create new match
