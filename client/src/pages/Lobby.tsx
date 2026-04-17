@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { client } from "../lib/nakama";
 import { Session } from "@heroiclabs/nakama-js";
+import { playClick } from "../lib/sounds";
 
 interface Props {
   session: Session;
@@ -13,6 +14,7 @@ export default function Lobby({ session, onMatchFound }: Props) {
   const [error, setError] = useState("");
 
   const findMatch = async () => {
+    playClick();
     setSearching(true);
     setError("");
     try {
@@ -23,7 +25,6 @@ export default function Lobby({ session, onMatchFound }: Props) {
       } else {
         data = res.payload as Record<string, string>;
       }
-      console.log("find_match response:", data);
       if (data && data.matchId) {
         onMatchFound(data.matchId);
       } else {
@@ -40,26 +41,36 @@ export default function Lobby({ session, onMatchFound }: Props) {
   return (
     <div className="page lobby-page">
       <div className="card">
-        <h2>Find a Match</h2>
-        <p className="welcome">Welcome, {session.username}!</p>
+        <div style={{ fontSize: "2.5rem", marginBottom: "0.3rem" }}>🎮</div>
+        <h2>Ready to Play?</h2>
+        <p className="welcome">Welcome back, {session.username}</p>
+
+        <p className="hint" style={{ marginBottom: "0.5rem", marginTop: 0 }}>Game Mode</p>
         <div className="mode-select">
           <button
             className={mode === "classic" ? "active" : ""}
-            onClick={() => setMode("classic")}
+            onClick={() => { playClick(); setMode("classic"); }}
           >
             ♟ Classic
           </button>
           <button
             className={mode === "timed" ? "active" : ""}
-            onClick={() => setMode("timed")}
+            onClick={() => { playClick(); setMode("timed"); }}
           >
             ⏱ Timed (30s)
           </button>
         </div>
+
         <button className="find-btn" onClick={findMatch} disabled={searching}>
-          {searching ? "Finding a random player..." : "Play Now"}
+          {searching ? "🔍 Searching..." : "⚡ Play Now"}
         </button>
-        {searching && <p className="hint">It usually takes 30 seconds</p>}
+
+        {searching && (
+          <div style={{ marginTop: "1rem" }}>
+            <div className="spinner" />
+            <p className="hint">Looking for an opponent...</p>
+          </div>
+        )}
         {error && <p className="error" role="alert">{error}</p>}
       </div>
     </div>

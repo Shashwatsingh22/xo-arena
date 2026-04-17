@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Lobby from "./pages/Lobby";
 import Game from "./pages/Game";
 import Leaderboard from "./pages/Leaderboard";
+import { resumeAudio } from "./lib/sounds";
 
 type Page = "login" | "lobby" | "game" | "leaderboard";
 
@@ -11,8 +12,10 @@ export default function App() {
   const [page, setPage] = useState<Page>("login");
   const [session, setSession] = useState<Session | null>(null);
   const [matchId, setMatchId] = useState("");
+  const [soundOn, setSoundOn] = useState(true);
 
   const handleLogin = (s: Session) => {
+    resumeAudio();
     setSession(s);
     setPage("lobby");
   };
@@ -31,7 +34,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 onClick={() => session && setPage("lobby")} style={{ cursor: "pointer" }}>
-          ✕○ Arena
+          ✕○ ARENA
         </h1>
         {session && (
           <nav>
@@ -45,7 +48,14 @@ export default function App() {
               className={page === "leaderboard" ? "active" : ""}
               onClick={() => setPage("leaderboard")}
             >
-              Leaderboard
+              Rankings
+            </button>
+            <button
+              className="sound-toggle"
+              onClick={() => setSoundOn(!soundOn)}
+              aria-label={soundOn ? "Mute sounds" : "Unmute sounds"}
+            >
+              {soundOn ? "🔊" : "🔇"}
             </button>
           </nav>
         )}
@@ -56,7 +66,12 @@ export default function App() {
           <Lobby session={session} onMatchFound={handleMatchFound} />
         )}
         {page === "game" && session && matchId && (
-          <Game session={session} matchId={matchId} onBack={handleBackToLobby} />
+          <Game
+            session={session}
+            matchId={matchId}
+            onBack={handleBackToLobby}
+            soundOn={soundOn}
+          />
         )}
         {page === "leaderboard" && session && (
           <Leaderboard session={session} />

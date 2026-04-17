@@ -7,6 +7,8 @@ interface Props {
   session: Session;
 }
 
+const RANK_EMOJI = ["🥇", "🥈", "🥉"];
+
 export default function Leaderboard({ session }: Props) {
   const [records, setRecords] = useState<LeaderboardRecord[]>([]);
   const [myStats, setMyStats] = useState<PlayerStats | null>(null);
@@ -34,9 +36,7 @@ export default function Leaderboard({ session }: Props) {
   if (loading) {
     return (
       <div className="page">
-        <div className="waiting">
-          <div className="spinner" />
-        </div>
+        <div className="spinner" />
       </div>
     );
   }
@@ -45,6 +45,7 @@ export default function Leaderboard({ session }: Props) {
     <div className="page leaderboard-page">
       {myStats && (
         <div className="card stats-card">
+          <div style={{ fontSize: "2rem", marginBottom: "0.3rem" }}>📊</div>
           <h2>Your Stats</h2>
           <div className="stats-grid">
             <div className="stat">
@@ -68,9 +69,10 @@ export default function Leaderboard({ session }: Props) {
       )}
 
       <div className="card">
-        <h2>Leaderboard</h2>
+        <div style={{ fontSize: "2rem", marginBottom: "0.3rem" }}>🏆</div>
+        <h2>Global Rankings</h2>
         {records.length === 0 ? (
-          <p className="hint">No records yet. Play some games!</p>
+          <p className="hint">No records yet. Be the first to play!</p>
         ) : (
           <table className="leaderboard-table" role="table">
             <thead>
@@ -87,10 +89,10 @@ export default function Leaderboard({ session }: Props) {
                   key={r.userId}
                   className={r.userId === session.user_id ? "highlight" : ""}
                 >
-                  <td>{r.rank || i + 1}</td>
+                  <td>{RANK_EMOJI[i] || (r.rank || i + 1)}</td>
                   <td>{r.username}</td>
                   <td>{r.score}</td>
-                  <td>{r.subscore}</td>
+                  <td>🔥 {r.subscore}</td>
                 </tr>
               ))}
             </tbody>
