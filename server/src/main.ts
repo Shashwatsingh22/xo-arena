@@ -49,41 +49,38 @@ var rpcFindMatch: nkruntime.RpcFunction = function (
   payload: string
 ): string {
   var mode = "classic";
+  var boardSize = "3";
   if (payload) {
     try {
       var data = JSON.parse(payload);
       if (data.mode === "timed") mode = "timed";
+      if (data.boardSize === "5" || data.boardSize === 5) boardSize = "5";
     } catch (e) {}
   }
 
-  // Search for open matches with same mode
+  // Search for open matches with same mode and board size
   var matches: nkruntime.Match[] = [];
   try {
-    // List all authoritative matches with 0 or 1 players
     var result = nk.matchList(10, true, "", 0, MAX_PLAYERS - 1, "");
     matches = result || [];
-    logger.info("matchList found %d candidate matches", matches.length);
   } catch (e) {
     logger.error("Match list error: %s", e);
   }
 
-  // Filter for open matches with the requested mode
   for (var i = 0; i < matches.length; i++) {
     var match = matches[i];
     try {
       var labelData = JSON.parse(match.label || "{}");
-      if (labelData.open === true && labelData.mode === mode) {
-        logger.info("Found open match: %s (size=%d)", match.matchId, match.size);
+      if (labelData.open === true && labelData.mode === mode &&
+          String(labelData.boardSize || 3) === boardSize) {
+        logger.info("Found open match: %s", match.matchId);
         return JSON.stringify({ matchId: match.matchId });
       }
-    } catch (e) {
-      logger.warn("Could not parse label for match %s", match.matchId);
-    }
+    } catch (e) {}
   }
 
-  // Create new match
-  var matchId = nk.matchCreate("xo_arena", { mode: mode });
-  logger.info("Created new match: %s", matchId);
+  var matchId = nk.matchCreate("xo_arena", { mode: mode, boardSize: boardSize });
+  logger.info("Created new match: %s (mode=%s, board=%s)", matchId, mode, boardSize);
   return JSON.stringify({ matchId: matchId });
 };
 

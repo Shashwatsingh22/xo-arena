@@ -10,6 +10,7 @@ interface Props {
 
 export default function Lobby({ session, onMatchFound }: Props) {
   const [mode, setMode] = useState<"classic" | "timed">("classic");
+  const [boardSize, setBoardSize] = useState<3 | 5>(3);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,7 +19,7 @@ export default function Lobby({ session, onMatchFound }: Props) {
     setSearching(true);
     setError("");
     try {
-      const res = await client.rpc(session, "find_match", { mode });
+      const res = await client.rpc(session, "find_match", { mode, boardSize: String(boardSize) });
       let data: Record<string, string>;
       if (typeof res.payload === "string") {
         data = JSON.parse(res.payload);
@@ -45,7 +46,29 @@ export default function Lobby({ session, onMatchFound }: Props) {
         <h2>Ready to Play?</h2>
         <p className="welcome">Welcome back, {session.username}</p>
 
-        <p className="hint" style={{ marginBottom: "0.5rem", marginTop: 0 }}>Game Mode</p>
+        <p className="hint" style={{ marginBottom: "0.5rem", marginTop: 0 }}>Board</p>
+        <div className="board-size-select">
+          <button
+            className={boardSize === 3 ? "active" : ""}
+            onClick={() => { playClick(); setBoardSize(3); }}
+          >
+            3×3 Classic
+          </button>
+          <button
+            className={boardSize === 5 ? "active" : ""}
+            onClick={() => { playClick(); setBoardSize(5); }}
+          >
+            5×5 Advanced
+          </button>
+        </div>
+
+        {boardSize === 5 && (
+          <p className="hint" style={{ marginTop: "-0.8rem", marginBottom: "1rem", fontSize: "0.8rem" }}>
+            Get 4 in a row to win!
+          </p>
+        )}
+
+        <p className="hint" style={{ marginBottom: "0.5rem", marginTop: 0 }}>Mode</p>
         <div className="mode-select">
           <button
             className={mode === "classic" ? "active" : ""}

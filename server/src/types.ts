@@ -13,6 +13,8 @@ interface PlayerInfo {
 
 interface MatchState {
   board: number[];
+  boardSize: number;   // 3 or 5
+  winLength: number;   // 3 for 3x3, 4 for 5x5
   players: { [userId: string]: PlayerInfo };
   marks: { [userId: string]: number };
   currentTurn: string;

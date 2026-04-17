@@ -9,6 +9,8 @@ export interface StateUpdate {
   board: number[];
   currentTurn: string;
   turnDeadline: number | null;
+  boardSize?: number;
+  winLength?: number;
 }
 
 export interface GameOver {
