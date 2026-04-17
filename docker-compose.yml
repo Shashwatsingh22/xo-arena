@@ -18,12 +18,22 @@ services:
       timeout: 5s
       retries: 10
 
+  server-build:
+    image: node:20-alpine
+    container_name: xo-server-build
+    working_dir: /app
+    volumes:
+      - ./server:/app
+    command: sh -c "npm install && npx tsc"
+
   nakama:
     image: registry.heroiclabs.com/heroiclabs/nakama:3.24.2
     container_name: xo-nakama
     depends_on:
       postgres:
         condition: service_healthy
+      server-build:
+        condition: service_completed_successfully
     entrypoint:
       - /bin/sh
       - -ecx
@@ -37,13 +47,33 @@ services:
         --session.token_expiry_sec 7200
         --runtime.js_entrypoint "build/main.js"
     ports:
-      - "7349:7349"   # gRPC
-      - "7350:7350"   # HTTP / WebSocket
-      - "7351:7351"   # Console UI
+      - "7349:7349"
+      - "7350:7350"
+      - "7351:7351"
     volumes:
       - ./server/build:/nakama/data/modules/build
       - ./local.yml:/nakama/data/local.yml
     restart: unless-stopped
 
+  client:
+    image: node:20-alpine
+    container_name: xo-client
+    working_dir: /app
+    depends_on:
+      nakama:
+        condition: service_started
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+    command: sh -c "npm install && npx vite --host 0.0.0.0 --port 3000"
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_NAKAMA_HOST=host.docker.internal
+      - VITE_NAKAMA_PORT=7350
+      - VITE_NAKAMA_KEY=defaultkey
+      - VITE_NAKAMA_SSL=false
+
 volumes:
   pgdata:
+  client_node_modules:

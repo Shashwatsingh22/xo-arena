@@ -71,42 +71,26 @@ xo-arena/
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) & Docker Compose
-- [Node.js](https://nodejs.org/) >= 18
-- npm >= 9
 
 ## Quick Start
 
-### 1. Start Nakama + PostgreSQL
+Everything runs with a single command:
 
 ```bash
 docker compose up -d
 ```
 
-Nakama Console will be available at `http://localhost:7351` (default login: `admin` / `password`).
+This starts all 4 services automatically:
+1. **PostgreSQL** — database
+2. **server-build** — compiles the Nakama TypeScript runtime (runs once, then exits)
+3. **Nakama** — game server (waits for DB + build to finish)
+4. **Client** — React dev server
 
-### 2. Build the server runtime
+Once everything is up:
+- Game: `http://localhost:3000`
+- Nakama Console: `http://localhost:7351` (login: `admin` / `password`)
 
-```bash
-cd server
-npm install
-npm run build
-```
-
-Restart Nakama to pick up the compiled runtime:
-
-```bash
-docker compose restart nakama
-```
-
-### 3. Start the client
-
-```bash
-cd client
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000` in two browser tabs to test multiplayer.
+Open the game in two browser tabs with different nicknames to test multiplayer.
 
 ## Environment Variables (Client)
 
@@ -136,14 +120,12 @@ Open `http://localhost:3000` in two browser tabs to test multiplayer.
 
 ## Testing Multiplayer
 
-1. Start the backend: `docker compose up -d`
-2. Build server: `cd server && npm install && npm run build`
-3. Restart Nakama: `docker compose restart nakama`
-4. Start client: `cd client && npm install && npm run dev`
-5. Open two browser tabs at `http://localhost:3000`
-6. Enter different nicknames in each tab
-7. Click "Play Now" in both — they'll be matched together
-8. Play the game!
+1. Run `docker compose up -d`
+2. Wait ~30 seconds for all services to start
+3. Open two browser tabs at `http://localhost:3000`
+4. Enter different nicknames in each tab
+5. Click "Play Now" in both — they'll be matched together
+6. Play the game!
 
 ## Deployment
 
