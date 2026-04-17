@@ -15,7 +15,7 @@ function checkWinner(board: number[]): number {
 }
 
 function broadcastState(dispatcher: nkruntime.MatchDispatcher, state: MatchState) {
-  const msg = JSON.stringify({
+  var msg = JSON.stringify({
     board: state.board,
     currentTurn: state.currentTurn,
     turnDeadline: state.turnDeadline,
@@ -28,7 +28,7 @@ function broadcastGameOver(
   state: MatchState,
   reason: string
 ) {
-  const msg = JSON.stringify({
+  var msg = JSON.stringify({
     winner: state.winner,
     board: state.board,
     reason: reason,
@@ -184,10 +184,13 @@ var matchJoin: nkruntime.MatchJoinFunction = function (
   dispatcher.matchLabelUpdate(label);
 
   if (totalPlayers === MAX_PLAYERS) {
+    logger.info("Both players in! Broadcasting state. currentTurn=%s", s.currentTurn);
     if (s.mode === "timed") {
       s.turnDeadline = Date.now() + s.turnDuration * 1000;
     }
     broadcastState(dispatcher, s);
+  } else {
+    logger.info("Waiting for more players. Current count: %d", totalPlayers);
   }
 
   return { state: s };

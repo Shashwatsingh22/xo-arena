@@ -94,6 +94,7 @@ export default function Game({ session, matchId, onBack }: Props) {
     };
 
     socket.onmatchpresence = (event) => {
+      console.log("Presence event - joins:", event.joins?.length, "leaves:", event.leaves?.length);
       setPlayers((prev) => {
         const updated = { ...prev };
         for (const join of event.joins || []) {
@@ -102,7 +103,9 @@ export default function Game({ session, matchId, onBack }: Props) {
         for (const leave of event.leaves || []) {
           delete updated[leave.user_id!];
         }
-        if (Object.keys(updated).length >= 2) setWaiting(false);
+        const count = Object.keys(updated).length;
+        console.log("Total players after presence update:", count);
+        if (count >= 2) setWaiting(false);
         return updated;
       });
     };
