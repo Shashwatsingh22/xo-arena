@@ -69,7 +69,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_NAKAMA_HOST=host.docker.internal
+      - VITE_NAKAMA_HOST=127.0.0.1
       - VITE_NAKAMA_PORT=7350
       - VITE_NAKAMA_KEY=defaultkey
       - VITE_NAKAMA_SSL=false
