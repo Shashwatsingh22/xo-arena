@@ -54,7 +54,7 @@ export default function Game({ session, matchId, onBack, soundOn }: Props) {
 
     socket.joinMatch(matchId).then((match) => {
       const p: Record<string, string> = {};
-      for (const presence of match.presences) {
+      for (const presence of match.presences || []) {
         p[presence.user_id!] = presence.username!;
       }
       p[session.user_id!] = session.username!;
