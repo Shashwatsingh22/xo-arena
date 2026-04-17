@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: xo-postgres
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  nakama:
+    image: registry.heroiclabs.com/heroiclabs/nakama:3.24.2
+    container_name: xo-nakama
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -ecx
+      - >
+        /nakama/nakama migrate up
+        --database.address postgres:${DB_PASSWORD:-changeme}@postgres:5432/nakama &&
+        exec /nakama/nakama
+        --name xo-arena
+        --database.address postgres:${DB_PASSWORD:-changeme}@postgres:5432/nakama
+        --logger.level INFO
+        --session.token_expiry_sec 7200
+        --runtime.js_entrypoint "build/main.js"
+    ports:
+      - "7350:7350"
+      - "7351:7351"
+    volumes:
+      - ./server/build:/nakama/data/modules/build
+    restart: always
+
+volumes:
+  pgdata:
