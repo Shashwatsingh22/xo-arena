@@ -59,22 +59,25 @@ var rpcFindMatch: nkruntime.RpcFunction = function (
   // Search for open matches with same mode
   var matches: nkruntime.Match[] = [];
   try {
-    var query = "+label.open:true +label.mode:" + mode;
-    var result = nk.matchList(10, true, "", 0, MAX_PLAYERS - 1, query);
+    // List all authoritative matches with 0 or 1 players
+    var result = nk.matchList(10, true, "", 0, MAX_PLAYERS - 1, "");
     matches = result || [];
-    logger.info("matchList query='%s' found %d matches", query, matches.length);
+    logger.info("matchList found %d candidate matches", matches.length);
   } catch (e) {
     logger.error("Match list error: %s", e);
   }
 
-  // Filter out matches where the requesting user is already in
-  // (avoid joining your own match)
-  if (matches.length > 0) {
-    for (var i = 0; i < matches.length; i++) {
-      var match = matches[i];
-      logger.info("Found existing match: %s (size=%d)", match.matchId, match.size);
-      // Return the first open match
-      return JSON.stringify({ matchId: match.matchId });
+  // Filter for open matches with the requested mode
+  for (var i = 0; i < matches.length; i++) {
+    var match = matches[i];
+    try {
+      var labelData = JSON.parse(match.label || "{}");
+      if (labelData.open === true && labelData.mode === mode) {
+        logger.info("Found open match: %s (size=%d)", match.matchId, match.size);
+        return JSON.stringify({ matchId: match.matchId });
+      }
+    } catch (e) {
+      logger.warn("Could not parse label for match %s", match.matchId);
     }
   }
 
