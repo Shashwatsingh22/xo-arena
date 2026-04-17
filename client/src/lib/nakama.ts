@@ -34,19 +34,10 @@ export async function disconnectSocket() {
 }
 
 export async function authenticateDevice(username: string): Promise<Session> {
-  let deviceId = localStorage.getItem("xo_device_id");
-  if (!deviceId) {
-    // crypto.randomUUID requires secure context (HTTPS), so fallback for HTTP
-    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-      deviceId = crypto.randomUUID();
-    } else {
-      deviceId = "xxxx-xxxx-xxxx-xxxx".replace(/x/g, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      );
-    }
-    localStorage.setItem("xo_device_id", deviceId);
-  }
-  const session = await client.authenticateDevice(deviceId, true, username);
+  // Use username as the custom ID so each name gets its own account
+  // This allows different players on the same device/browser
+  const customId = "xo_" + username.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  const session = await client.authenticateCustom(customId, true, username);
   _session = session;
   return session;
 }
