@@ -6,9 +6,10 @@ import { playClick } from "../lib/sounds";
 interface Props {
   session: Session;
   onMatchFound: (matchId: string) => void;
+  onPlayBot: (boardSize: 3 | 5) => void;
 }
 
-export default function Lobby({ session, onMatchFound }: Props) {
+export default function Lobby({ session, onMatchFound, onPlayBot }: Props) {
   const [mode, setMode] = useState<"classic" | "timed">("classic");
   const [boardSize, setBoardSize] = useState<3 | 5>(3);
   const [searching, setSearching] = useState(false);
@@ -61,7 +62,6 @@ export default function Lobby({ session, onMatchFound }: Props) {
             5×5 Advanced
           </button>
         </div>
-
         {boardSize === 5 && (
           <p className="hint" style={{ marginTop: "-0.8rem", marginBottom: "1rem", fontSize: "0.8rem" }}>
             Get 4 in a row to win!
@@ -85,7 +85,17 @@ export default function Lobby({ session, onMatchFound }: Props) {
         </div>
 
         <button className="find-btn" onClick={findMatch} disabled={searching}>
-          {searching ? "🔍 Searching..." : "⚡ Play Now"}
+          {searching ? "🔍 Searching..." : "⚡ Play Online"}
+        </button>
+
+        <div style={{ margin: "0.8rem 0", color: "var(--text-muted)", fontSize: "0.8rem" }}>or</div>
+
+        <button
+          className="find-btn"
+          style={{ background: "linear-gradient(135deg, #16a34a, #059669)", boxShadow: "0 4px 20px rgba(22,163,74,0.3)" }}
+          onClick={() => { playClick(); onPlayBot(boardSize); }}
+        >
+          🤖 Play vs Bot
         </button>
 
         {searching && (

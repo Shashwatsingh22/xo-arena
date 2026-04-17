@@ -3,16 +3,18 @@ import { Session } from "@heroiclabs/nakama-js";
 import Login from "./pages/Login";
 import Lobby from "./pages/Lobby";
 import Game from "./pages/Game";
+import BotGame from "./pages/BotGame";
 import Leaderboard from "./pages/Leaderboard";
 import { resumeAudio } from "./lib/sounds";
 
-type Page = "login" | "lobby" | "game" | "leaderboard";
+type Page = "login" | "lobby" | "game" | "botgame" | "leaderboard";
 
 export default function App() {
   const [page, setPage] = useState<Page>("login");
   const [session, setSession] = useState<Session | null>(null);
   const [matchId, setMatchId] = useState("");
   const [soundOn, setSoundOn] = useState(true);
+  const [botBoardSize, setBotBoardSize] = useState<3 | 5>(3);
 
   const handleLogin = (s: Session) => {
     resumeAudio();
@@ -23,6 +25,11 @@ export default function App() {
   const handleMatchFound = (id: string) => {
     setMatchId(id);
     setPage("game");
+  };
+
+  const handlePlayBot = (size: 3 | 5) => {
+    setBotBoardSize(size);
+    setPage("botgame");
   };
 
   const handleBackToLobby = () => {
@@ -63,15 +70,13 @@ export default function App() {
       <main>
         {page === "login" && <Login onLogin={handleLogin} />}
         {page === "lobby" && session && (
-          <Lobby session={session} onMatchFound={handleMatchFound} />
+          <Lobby session={session} onMatchFound={handleMatchFound} onPlayBot={handlePlayBot} />
         )}
         {page === "game" && session && matchId && (
-          <Game
-            session={session}
-            matchId={matchId}
-            onBack={handleBackToLobby}
-            soundOn={soundOn}
-          />
+          <Game session={session} matchId={matchId} onBack={handleBackToLobby} soundOn={soundOn} />
+        )}
+        {page === "botgame" && (
+          <BotGame boardSize={botBoardSize} onBack={handleBackToLobby} soundOn={soundOn} />
         )}
         {page === "leaderboard" && session && (
           <Leaderboard session={session} />
